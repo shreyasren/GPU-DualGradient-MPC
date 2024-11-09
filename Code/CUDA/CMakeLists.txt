@@ -31,5 +31,10 @@ link_directories(${LIBWB_LIB_DIR})
 
 set(CUDA_NVCC_FLAGS_DEBUG ${CUDA_NVCC_FLAGS_DEBUG} "--use_fast_math")
 
+#Build instructions for main.cu
 cuda_add_executable(main main.cu)
 target_link_libraries(main wb rt)
+
+#Build instructions for step4.cu
+cuda_add_executable(step4 step4.cu)
+target_link_libraries(step4 wb rt)
