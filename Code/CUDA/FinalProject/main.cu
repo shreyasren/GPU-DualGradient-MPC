@@ -1,9 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define EPSILON 1e-7
+#define EPSILON 1e-6
 //#define STEP2
 #define STEP4 
+
+// Sequential implementation of Step 2
+void StepTwoGPADSequential(const float* M_G, float* w_v, const float* g_P, float* zhat_v, const int N, const int n_u, const int m){
+	
+	for (int i = 0; i < N; i++){
+		for (int j = 0; j < n_u; j++){ 
+			float sum = 0.0; 
+			for (int k = j; k < 4*n_u*N; k += n_u){
+				sum += M_G[i*m + k]*w_v[k];  
+			}
+			for (int k = 4*n_u*N; k < m; k++){
+				sum += M_G[i*m + k]*w_v[k]; 
+			}
+			zhat_v[i*n_u + j] = sum - g_P[i*n_u + j];
+		}
+	}
+
+}
+
+// Sequential implementation of Step 4
+void StepFourGPADSequential(const float* G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m){
+	
+	for (int i = 0; i < m; i++){
+		float sum = 0.0f; 
+		for (int j = 0; j < N; j++){
+			if (i < 4*n_u*N){
+				sum += G_L[i*N + j]*zhat_v[j*n_u + (i%n_u)]; 
+			}
+			else{
+				for(int k = 0; k < n_u; k++){
+					sum += G_L[i*N + j]*zhat_v[j*n_u + k]; 
+				}
+			}
+		}
+		y_vp1[i] = sum + w_v[i] + p_D[i]; 
+	}
+	
+	for(int i = 0; i < m; i++){
+		if(y_vp1[i] < 0) y_vp1[i] = 0;
+	}
+}
+
 
 int main(int argc, char *argv[]){
 	
@@ -118,8 +160,8 @@ int main(int argc, char *argv[]){
     }
 	
 	// Dynamically allocate variables we need  
-	float *w_v4 = (float*)calloc(m, sizeof(float)); 
-	float *zhat_v4 = (float*)calloc(N*n_u, sizeof(float)); 
+	float *w_v = (float*)calloc(m, sizeof(float)); 
+	float *zhat_v = (float*)calloc(N*n_u, sizeof(float)); 
 	float *p_D = (float*)calloc(m, sizeof(float)); 
 	float *G_L = (float*)calloc(N*m, sizeof(float));
 	float *y_vp1 = (float*)calloc(m, sizeof(float));
@@ -129,8 +171,8 @@ int main(int argc, char *argv[]){
 	float *exp_y_vp1 = (float*)calloc(m, sizeof(float));
 	
 	// Populate input matrices 
-	for(cnt = 0; cnt < m; cnt++) fscanf(file, "%f", &w_v4[cnt]);
-	for(cnt = 0; cnt < N*n_u; cnt++) fscanf(file, "%f", &zhat_v4[cnt]);
+	for(cnt = 0; cnt < m; cnt++) fscanf(file, "%f", &w_v[cnt]);
+	for(cnt = 0; cnt < N*n_u; cnt++) fscanf(file, "%f", &zhat_v[cnt]);
 	for(cnt = 0; cnt < m; cnt++) fscanf(file, "%f", &p_D[cnt]); 
 	for(cnt = 0; cnt < N*m; cnt++) fscanf(file, "%f", &G_L[cnt]);
 	
@@ -189,18 +231,7 @@ int main(int argc, char *argv[]){
 	
 	// STEP 2: zhat_v <-- M_G * w_v - g_P
 	#ifdef STEP2
-	for (int i = 0; i < N; i++){
-		for (int j = 0; j < n_u; j++){ 
-			float sum = 0.0; 
-			for (int k = j; k < 4*n_u*N; k += n_u){
-				sum += M_G[i*m + k]*w_v[k];  
-			}
-			for (int k = 4*n_u*N; k < m; k++){
-				sum += M_G[i*m + k]*w_v[k]; 
-			}
-			zhat_v[i*n_u + j] = sum - g_P[i*n_u + j];
-		}
-	}
+	StepTwoGPADSequential(M_G, w_v, g_P, zhat_v, N, n_u, m);
 	
 	int status_success = 0; 
 	int fail_index = 0; 
@@ -226,24 +257,7 @@ int main(int argc, char *argv[]){
 	
 	// STEP 4: y_{v+1} <-- [w_v + G_L * zhat_v + p_D]_+ (INSERT HERE)
 	#ifdef STEP4 
-	for (int i = 0; i < m; i++){
-		float sum = 0.0f; 
-		for (int j = 0; j < N; j++){
-			if (i < 4*n_u*N){
-				sum += G_L[i*N + j]*zhat_v4[j*n_u + (i%n_u)]; 
-			}
-			else{
-				for(int k = 0; k < n_u; k++){
-					sum += G_L[i*N + j]*zhat_v4[j*n_u + k]; 
-				}
-			}
-		}
-		y_vp1[i] = sum + w_v4[i] + p_D[i]; 
-	}
-	
-	for(int i = 0; i < m; i++){
-		if(y_vp1[i] < 0) y_vp1[i] = 0;
-	}
+	StepFourGPADSequential(G_L, y_vp1, w_v, p_D, zhat_v, N, n_u, m);
 	
 	int status_success = 0; 
 	int fail_index = 0; 
@@ -280,8 +294,8 @@ int main(int argc, char *argv[]){
 	#endif 
 	
 	#ifdef STEP4
-	free(w_v4); 
-	free(zhat_v4); 
+	free(w_v); 
+	free(zhat_v); 
 	free(p_D); 
 	free(G_L); 
 	free(y_vp1); 
