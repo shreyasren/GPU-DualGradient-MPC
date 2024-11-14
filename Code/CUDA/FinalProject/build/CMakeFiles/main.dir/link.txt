@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -rdynamic CMakeFiles/main.dir/main_generated_main.cu.o -o main   -L/SECS/home/l/lukenuculaj/ECE5770/Assignments/libwb/lib  -Wl,-rpath,/SECS/home/l/lukenuculaj/ECE5770/Assignments/libwb/lib /usr/local/cuda-10.1/lib64/libcudart_static.a -ldl -lrt -lwb -lrt -lpthread 
