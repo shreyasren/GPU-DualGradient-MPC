@@ -5,6 +5,16 @@
 //#define STEP2
 #define STEP4 
 
+__global__ void StepTwoGPADParallelCols(const float* __restrict__ M_G, const float* __restrict__ g_P, float* w_v, float* zhat_v, int N, int n_u, int m){
+	
+	// insert parallel code here
+}
+
+__global__ void StepFourGPADParallelCols(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, int N, int n_u, int m){
+	
+	// insert parallel code here
+}
+
 // Sequential implementation of Step 2
 void StepTwoGPADSequential(const float* M_G, float* w_v, const float* g_P, float* zhat_v, const int N, const int n_u, const int m){
 	
