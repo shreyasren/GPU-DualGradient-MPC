@@ -1,30 +1,100 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define EPSILON 1e-7
-//#define STEP2
-#define STEP4 
+#include <math.h>
 
-int main(int argc, char *argv[]){
-	
-	if (argc != 2) {
-        fprintf(stderr, "Usage: %s <subfolder number>\n", argv[0]);
-        return 1;
+#define EPSILON 1e-7
+#define STEP1
+//#define STEP2
+//#define STEP4
+
+#define CUDA_CHECK(ans){ gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
+{
+    if (code != cudaSuccess)
+    {
+        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+        if (abort) exit(code);
     }
-	
-	int n_u, N, m; 
-	int cnt = 0; 
-	FILE *file; 
-    char *subfolder_number = argv[1];
-	
-	char inpfile1[256];
+}
+
+void CheckNullError(void *ptr, const char *string, const char *file, int line);
+void PrintInputFileDataSeqStep1(double *y_vec_in, double *y_vec_minus_1_in, const int n_u, const int N, const int m, const double beta_v);
+void CheckOutputDataStep1(double *reference_out, double *calculate_out, const int m);
+__global__ void KernelStep1(double *y_vec_in, double *y_vec_minus_1_in, double *w_vec_out, double beta_v, int m);
+
+int main(int argc, char *argv[])
+{
+    int n_u;
+    int N;
+    int m;
+	int cnt = 0;
+    char inpfile1[256];
 	char inpfile3[256];
 	char outpfile1[256]; 
 	char outpfile3[256];
-    snprintf(inpfile1, sizeof(inpfile1), "step1/%s/input.txt", subfolder_number);
-	snprintf(outpfile1, sizeof(outpfile1), "step1/%s/output.txt", subfolder_number);
-	snprintf(inpfile3, sizeof(inpfile3), "step3/%s/input.txt", subfolder_number);
-	snprintf(outpfile3, sizeof(outpfile3), "step3/%s/output.txt", subfolder_number);
+    double beta_v;            /* STEP1: size: 1x1 matrix */
+    double *y_vec_in;         /* STEP1: size: 1x1 matrix */
+    double *y_vec_minus_1_in; /* STEP1: size: mx1 matrix */
+    double *w_vec_out;        /* STEP1: size: mx1 matrix */
+    double *w_vec_out_ref;    /* STEP1 */ 
+	FILE *file; 
+    char *subfolder_number;
+    
+    /*****************/
+    /* CMD LINE ARGS */
+    /*****************/
+	if (argc != 2)
+    {
+        fprintf(stderr, "Usage: %s <subfolder number>\n", argv[0]);
+        exit(EXIT_FAILURE);;
+    }
+    else
+    {
+        subfolder_number = argv[1];
+        snprintf(inpfile1, sizeof(inpfile1), "FinalProject/build/step1/%s/input.txt", subfolder_number);
+        snprintf(outpfile1, sizeof(outpfile1), "FinalProject/build/step1/%s/output.txt", subfolder_number);
+        snprintf(inpfile3, sizeof(inpfile3), "step3/%s/input.txt", subfolder_number);
+        snprintf(outpfile3, sizeof(outpfile3), "step3/%s/output.txt", subfolder_number);
+    }
+	
+    // Fetch Data from step 1
+#ifdef STEP1    
+    file = fopen(inpfile1, "r");
+    CheckNullError(file, "OPENING_INPUT_FILE step1", __FILE__, __LINE__);
+    
+    if (fscanf(file, "%d %d %d %lf", &n_u, &N, &m, &beta_v) != 4)
+    {
+        perror("Error reading data");
+        fclose(file);
+    }
+
+    // Dym mem allocation
+    y_vec_in         = (double *)calloc(m, sizeof(double));
+    y_vec_minus_1_in = (double *)calloc(m, sizeof(double));
+    w_vec_out        = (double *)calloc(m, sizeof(double));
+    w_vec_out_ref    = (double *)calloc(m, sizeof(double));
+
+    CheckNullError(y_vec_in        , "ALLOCATION y_vec_in"        , __FILE__, __LINE__);
+    CheckNullError(y_vec_minus_1_in, "ALLOCATION y_vec_minus_1_in", __FILE__, __LINE__);
+    CheckNullError(w_vec_out       , "ALLOCATION w_vec_out"       , __FILE__, __LINE__);
+    CheckNullError(w_vec_out_ref   , "ALLOCATION w_vec_out_ref"   , __FILE__, __LINE__);
+
+    // Get vector data from input file
+    for (cnt = 0; cnt < m; cnt++) fscanf(file, "%lf", &y_vec_in[cnt]);
+    for (cnt = 0; cnt < m; cnt++) fscanf(file, "%lf", &y_vec_minus_1_in[cnt]);
+
+    //PrintInputFileDataSeqStep1(y_vec_in, y_vec_minus_1_in, n_u, N, m, beta_v);
+    fclose(file);
+
+    file = fopen(outpfile1, "r");
+    CheckNullError(file, "OPENING_OUTPUT_FILE step1", __FILE__, __LINE__);
+    
+    // Get vector data from output file
+    for (cnt = 0; cnt < m; cnt++) fscanf(file, "%lf", &w_vec_out_ref[cnt]);
+    
+    fclose(file);
+#endif /* STEP1 */
 	
 	
 	// Fetching data for step 2
@@ -186,6 +256,38 @@ int main(int argc, char *argv[]){
 	// Write algorithm here! 
 	
 	// STEP 1: (INSERT HERE)
+#ifdef STEP1    
+    // Seq
+    for (int i = 0; i < m; i++)
+    {
+        w_vec_out[i] = y_vec_in[i] + beta_v * (y_vec_in[i] - y_vec_minus_1_in[i]);
+    }
+    CheckOutputDataStep1(w_vec_out_ref, w_vec_out, m);
+
+    // Parallel
+    double *device_y_vec_in;
+    double *device_y_vec_minus_1_in;
+    double *device_w_vec_out;
+
+    CUDA_CHECK(cudaMalloc((void **)&device_y_vec_in, m * sizeof(double)));
+    CUDA_CHECK(cudaMalloc((void **)&device_y_vec_minus_1_in, m * sizeof(double)));
+    CUDA_CHECK(cudaMalloc((void **)&device_w_vec_out, m * sizeof(double)));
+    
+    CUDA_CHECK(cudaMemcpy(device_y_vec_in, y_vec_in, m * sizeof(double), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(device_y_vec_minus_1_in, y_vec_minus_1_in, m * sizeof(double), cudaMemcpyHostToDevice));
+
+    dim3 gridDimStep1(ceil((float)m / (float)32), 1 , 1);
+    dim3 blockDimStep1(32, 1, 1);
+
+    KernelStep1<<<gridDimStep1, blockDimStep1>>>(device_y_vec_in, device_y_vec_minus_1_in, device_w_vec_out, beta_v, m);
+
+    cudaDeviceSynchronize();
+
+    CUDA_CHECK(cudaMemcpy(w_vec_out, device_w_vec_out, m * sizeof(double), cudaMemcpyDeviceToHost));
+
+    CheckOutputDataStep1(w_vec_out_ref, w_vec_out, m);
+   
+#endif /* STEP1 */
 	
 	// STEP 2: zhat_v <-- M_G * w_v - g_P
 	#ifdef STEP2
@@ -269,6 +371,13 @@ int main(int argc, char *argv[]){
 	
 	
 	// Free memory from the heap
+#ifdef STEP1
+    free(w_vec_out_ref);
+    free(w_vec_out);
+    free(y_vec_minus_1_in);
+    free(y_vec_in);
+#endif STEP1 /* STEP1 */
+    
 	#ifdef STEP2
 	free(M_G); 
 	free(w_v); 
@@ -291,4 +400,80 @@ int main(int argc, char *argv[]){
 	#endif 
 	
 	return 0; 
+}
+
+void CheckNullError(void *ptr, const char *string, const char *file, int line)
+{
+    if (ptr == NULL)
+    {
+        printf("error: %s, file: %s, line num: %d\n", string, file, line);
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        /* no error, do nothing */
+    }
+}
+
+void PrintInputFileDataSeqStep1(double *y_vec_in, double *y_vec_minus_1_in, const int n_u, const int N, const int m, const double beta_v)
+{
+    printf("INPUT DATA: STEP 1\n");
+    printf("%d ", n_u);
+    printf("%d ", N);
+    printf("%d ", m);
+    printf("%0.8lf\n", beta_v);
+
+    for (int i = 0; i < m; i++)
+    {
+        printf("%0.8lf\n", y_vec_in[i]);
+    }
+
+    for (int i = 0; i < m; i++)
+    {
+        printf("%0.8lf\n", y_vec_minus_1_in[i]);
+    }
+
+    printf("\n");
+}
+
+void CheckOutputDataStep1(double *reference_out, double *calculate_out, const int m)
+{
+    unsigned int cnt_good;
+    unsigned int cnt_bad;
+
+    cnt_good = 0;
+    cnt_bad = 0;
+    
+    printf("OUTPUT RESULTS\n");
+    
+    for (int i = 0; i < m; i++)
+    {
+        if (fabs(reference_out[i] - calculate_out[i]) <= EPSILON)
+        {
+            cnt_good++;
+
+            if (cnt_good == m) printf("result: correct :)\n");
+        }
+        else
+        {
+            if (cnt_bad == 0) printf("result: incorrect :(\n");
+            
+            printf("idx: %d, actual: %0.8lf, calculated: %0.8lf\n", i, reference_out[i], calculate_out[i]);
+            cnt_bad++;
+        }
+    }
+}
+
+__global__ void KernelStep1(double *y_vec_in, double *y_vec_minus_1_in, double *w_vec_out, double beta_v, int m)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < m)
+    {
+        w_vec_out[i] = y_vec_in[i] + beta_v * (y_vec_in[i] - y_vec_minus_1_in[i]);
+    }
+    else
+    {
+        /* extra thread, do nothing */
+    }  
 }
