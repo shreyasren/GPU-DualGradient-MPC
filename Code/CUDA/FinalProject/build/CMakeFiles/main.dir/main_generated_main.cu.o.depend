@@ -97,6 +97,7 @@ SET(CUDA_NVCC_DEPEND
  "/usr/include/strings.h"
  "/usr/include/sys/cdefs.h"
  "/usr/include/sys/select.h"
+ "/usr/include/sys/time.h"
  "/usr/include/sys/types.h"
  "/usr/include/time.h"
  "/usr/lib/gcc/x86_64-redhat-linux/8/include/limits.h"
