@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include "seq_functions.h"
+#include "kernel_functions.h"
+
 #define EPSILON 1e-6
 #define COMP_EPSILON 1e-8
 //#define ENABLE_FLATTEN_MATRICES
@@ -9,333 +12,6 @@
 #define ENABLE_GPU
 //#define ENABLE_STEP2
 #define ENABLE_STEP4
-
-#ifdef ENABLE_FLATTEN_MATRICES
-__global__ void StepTwoGPADParallelCols(const float* __restrict__ M_G, const float* __restrict__ g_P, float* w_v, float* zhat_v, int N, int n_u, int m){
-	
-	// insert parallel code here
-}
-
-__global__ void StepFourGPADFlatParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
-	
-	// launch m threads to compute a unique element of the output vector 
-	
-	extern __shared__ float zhat_vs[]; 
-	int tx = threadIdx.x; 
-	int bx = blockIdx.x; 
-	int index = tx + bx*blockDim.x; 
-	
-	// collaborate in loading the shared memory with m threads
-	int i = 0; 
-	while(tx + i < n_u*N){
-		zhat_vs[tx + i] = zhat_v[tx + i]; // coalesced memory accesses 
-		i += blockDim.x; 
-	}
-	__syncthreads(); 
-	
-	// handle out of bounds 
-	if(index < m){
-		float sum = 0.0f; 
-		float yraw = 0.0f; 
-		for (int j = 0; j < N; j++){
-			if (index < 4*n_u*N){
-				sum += G_L[index*N + j]*zhat_vs[j*n_u + (index % n_u)]; 
-			}
-			else{
-				for(int k = 0; k < n_u; k++){
-					sum += G_L[index*N + j]*zhat_vs[j*n_u + k]; 
-				}
-			}
-		}
-		yraw = sum + w_v[index] + p_D[index]; // sum 
-		
-		y_vp1[index] = (yraw < COMP_EPSILON) ? 0 : yraw; // projection onto nonnegative orthant
-	}
-
-}
-
-/*
-__global__ void StepFourGPADParElements(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
-	
-	// launch m*N threads to compute a unique element of the output vector 
-	__shared__ float zhat_vs[blockDim.x]; 
-	int tx = threadIdx.x; int ty = threadIdx.y; 
-	int bx = blockIdx.x; int by = blockIdx.y; 
-	int row = by*blockDim.y + ty; 
-	int col = bx*blockDim.x + tx; 
-	
-	// collaborate in loading the shared memory with m threads
-	int i = 0; 
-	while(tx + i < num_states){
-		zhat_vs[tx + i] = zhat_v[tx + i]; // coalesced memory accesses 
-		i += blockDim.x; 
-	}
-	__syncthreads(); 
-	
-	// handle out of bounds 
-	if(index < m){
-		float sum = 0.0f; 
-		float yraw = 0.0f; 
-		for (int j = 0; j < N; j++){
-			if (index < 4*n_u*N){
-				sum += G_L[index*N + j]*zhat_vs[j*n_u + (index % n_u)]; 
-			}
-			else{
-				for(int k = 0; k < n_u; k++){
-					sum += G_L[index*N + j]*zhat_vs[j*n_u + k]; 
-				}
-			}
-		}
-		yraw = sum + w_v[index] + p_D[index]; // sum 
-		
-		y_vp1[index] = (yraw < COMP_EPSILON) ? 0 : yraw; // projection onto nonnegative orthant
-	}
-
-}
-*/
-__global__ void ParPositiveProjection(float* vec, int size){
-	
-	int index = threadIdx.x + blockDim.x*blockIdx.x; 
-	if (index < size){
-		if (vec[index] < COMP_EPSILON) vec[index] = 0.0f; 
-	}
-	
-}
-
-// Sequential implementation of Step 2
-void StepTwoGPADFlatSequential(const float* M_G, float* w_v, const float* g_P, float* zhat_v, const int N, const int n_u, const int m){
-	
-	for (int i = 0; i < N; i++){
-		for (int j = 0; j < n_u; j++){ 
-			float sum = 0.0; 
-			for (int k = j; k < 4*n_u*N; k += n_u){
-				sum += M_G[i*m + k]*w_v[k];  
-			}
-			for (int k = 4*n_u*N; k < m; k++){
-				sum += M_G[i*m + k]*w_v[k]; 
-			}
-			zhat_v[i*n_u + j] = sum - g_P[i*n_u + j];
-		}
-	}
-
-}
-
-// Sequential implementation of Step 4
-void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m){
-	
-	for (int i = 0; i < m; i++){
-		float sum = 0.0f; 
-		for (int j = 0; j < N; j++){
-			if (i < 4*n_u*N){
-				sum += G_L[i*N + j]*zhat_v[j*n_u + (i%n_u)]; 
-			}
-			else{
-				for(int k = 0; k < n_u; k++){
-					sum += G_L[i*N + j]*zhat_v[j*n_u + k]; 
-				}
-			}
-		}
-		y_vp1[i] = sum + w_v[i] + p_D[i]; 
-	}
-	
-	for(int i = 0; i < m; i++){
-		if(y_vp1[i] < 0) y_vp1[i] = 0;
-	}
-}
-#endif 
-
-#ifndef ENABLE_FLATTEN_MATRICES
-	// Sequential implementation of Step 2 over unflattened matrices 
-	void StepTwoGPADSequential(const float* M_G, float* w_v, const float* g_P, float* zhat_v, const int N, const int n_u, const int m){
-		
-		int numrows_M_G = n_u*N;
-		int numcols_M_G = m; 
-		for (int i = 0; i < numrows_M_G; i++){
-			float sum = 0.0f; 
-			for(int j = 0; j < numcols_M_G; j++){
-				sum += M_G[i*numcols_M_G + j]*w_v[j]; 
-			}
-			zhat_v[i] = sum - g_P[i]; 
-		}
-
-	}
-
-	// Sequential implementation of Step 4 over unflattened matrices 
-	void StepFourGPADSequential(const float* G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m){
-		
-		int numrows_G_L = m;
-		int numcols_G_L = n_u*N;
-		for (int i = 0; i < numrows_G_L; i++){
-			float sum = 0.0f; 
-			for (int j = 0; j < numcols_G_L; j++){
-				sum += G_L[i*numcols_G_L + j]*zhat_v[j]; 
-			}
-			sum += w_v[i] + p_D[i]; 
-			y_vp1[i] = (sum + abs(sum))/2; 
-		}
-	}
-	
-	
-	__global__ void StepFourGPADParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m, int max_threads){
-		
-		// launch m threads to compute a unique element of the output vector 
-		
-		extern __shared__ float zhat_vs[];
-		int tx = threadIdx.x; 
-		int bx = blockIdx.x; 
-		int index = tx + bx*blockDim.x; 
-		int numcols_G_L = n_u*N; 
-		
-		// collaborate in loading the shared memory with m threads
-		for(int i = tx; i < numcols_G_L; i+= blockDim.x){
-			zhat_vs[i] = zhat_v[i]; // coalesced memory accesses
-		}
-		__syncthreads(); 
-			
-		if (index < max_threads){	
-			// handle out of bounds 
-			for (int i = index; i < m; i += gridDim.x*blockDim.x){
-				float sum = 0.0f; 
-				for (int j = 0; j < numcols_G_L; j++)
-				{
-					sum += G_L[i*numcols_G_L + j]*zhat_vs[j]; 
-				}
-				sum += w_v[i] + p_D[i]; // sum 
-				y_vp1[i] = (sum + abs(sum))/2; // max without control divergence
-			}
-		}
-		/*
-		if(index < m){
-			
-			float sum = 0.0f; 
-			for (int j = 0; j < numcols_G_L; j++){
-				sum += G_L[index*numcols_G_L + j]*zhat_vs[j]; 
-			}
-			sum += w_v[index] + p_D[index]; // sum 
-			//y_vp1[index] = (sum < COMP_EPSILON) ? 0 : sum; // projection onto nonnegative orthant
-			y_vp1[index] = (sum + abs(sum))/2; // projection onto nonnegative orthant without control divergence
-		}
-		*/
-
-	}
-	
-	__global__ void StepFourGPADFlippedParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m, int max_threads){
-		
-		// launch m threads to compute a unique element of the output vector 
-		
-		extern __shared__ float zhat_vs[];  
-		int index = threadIdx.x + blockIdx.x*blockDim.x; 
-		int numcols_G_L = n_u*N;
-		
-		// collaborate in loading the shared memory with m threads
-		for(int i = threadIdx.x; i < numcols_G_L; i+= blockDim.x){
-			zhat_vs[i] = zhat_v[i]; // coalesced memory accesses
-		}
-		__syncthreads(); 
-			
-		if (index < max_threads){	
-			// handle out of bounds 
-			for (int i = index; i < m; i += gridDim.x*blockDim.x){
-				float sum = 0.0f; 
-				for (int j = 0; j < numcols_G_L; j++)
-				{
-					sum += G_L[j*m + i]*zhat_vs[j]; // flipping the matrices results in coalesced memory accesses
-				}
-				sum += w_v[i] + p_D[i]; // sum 
-				//y_vp1[i] = (sum + abs(sum))/2; // max without control divergence
-				y_vp1[i] = (sum < COMP_EPSILON) ? 0 : sum;
-			}
-		}
-	}
-	
-	__global__ void ParDotProduct(const float* matrix, float* vector, float* result, int row_index, int size){
-		
-		extern __shared__ float prod[]; 
-		int index = threadIdx.x + blockIdx.x*blockDim.x; 
-		int tx = threadIdx.x; 
-		
-		float sum = 0.0f; 
-		int i = 0; 
-		// coalesced memory accesses by the threads 
-		while (index + i < size){
-			sum += matrix[row_index + index + i]*vector[index + i];
-			i += blockDim.x; 
-		}
-		// store the sum computed by each thread in the shared memory and synch the threads 
-		prod[tx] = sum; 
-		__syncthreads(); 
-		
-		// reduction step 
-		for (unsigned int stride = blockDim.x >> 1; stride > 0; stride >>= 1){
-			if (tx < stride) prod[tx] += prod[tx + stride]; 
-			__syncthreads(); 
-		}
-		
-		// write result to output 
-		if (tx == 0){
-			result[row_index] = prod[0]; 
-		}
-	}
-	
-	__global__ void StepFourGPADDynamicParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
-		
-		int tx = threadIdx.x; 
-		int bx = blockIdx.x; 
-		int index = tx + bx*blockDim.x; 
-		int numcols_G_L = n_u*N; 
-		const int block_size = (int)(min(256.0, (float)n_u*N)); 
-		float sum = 0.0f; 
-		
-		// handle out of bounds 
-		for (int i = index; i < m; i += gridDim.x*blockDim.x){
-			ParDotProduct<<<1, block_size, block_size*sizeof(float)>>>(G_L, zhat_v, y_vp1, i*numcols_G_L, numcols_G_L); 
-		}
-		cudaDeviceSynchronize(); // wait for all child kernels to complete execution 
-		
-		sum = y_vp1[index] + w_v[index] + p_D[index]; 
-		y_vp1[index] = (sum < COMP_EPSILON) ? 0 : sum; // projection onto nonnegative orthant
-		//y_vp1[index] = (sum + abs(sum))/2; 
-	}
-	
-	/*
-	__global__ void StepFourGPADParChunks(const float* G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
-		
-		// launch 32*m threads to compute a unique element of the output vector 
-		
-		extern __shared__ float zhat_vs[];
-		int tx = threadIdx.x; int ty = threadIdx.y; 
-		int bx = blockIdx.x; int by = blockIdx.y; 
-		int col = tx + bx*blockDim.x; 
-		int row = ty + by*blockDim.y; 
-		int numrows_G_L = m; 
-		int numcols_G_L = n_u*N; 
-		
-		// collaborate in loading the shared memory with m threads
-		for(int i = tx; i < numcols_G_L; i+= blockDim.x){
-			zhat_vs[i] = zhat_v[i]; // coalesced memory accesses
-		}
-		__syncthreads(); 
-		
-		// handle out of bounds 
-		if(row < numrows_G_L && col < numcols_G_L){
-			float result = 0.0f;
-			for(int j = col; j < numcols_G_L; j += blockDim.x){
-				result += G_L[row*numcols_G_L + j]*zhat_vs[j]; 
-			}
-			atomicAdd(&y_vp1[row], result); 
-			__syncthreads(); 
-			
-			if(col == 0){
-				sum_results += 
-			}
-			sum += w_v[index] + p_D[index]; // sum 
-			y_vp1[index] = (sum < COMP_EPSILON) ? 0 : sum; // projection onto nonnegative orthant
-		}
-
-	}
-	*/
-	
-#endif 
 
 // Function to print a vector
 void printVector(const float* vec, int size, const char* name) {
@@ -358,7 +34,45 @@ void printMatrix(const float* mat, int rows, int cols, const char* name) {
     }
 }
 
+int readData(const char *filename, int *n_u, int *N, int *m, float **M_G, float **w_v, float **g_P){
+	
+	// open files and read 
+	FILE* file = fopen(filename, "r"); 
+	
+	if (fscanf(file, "%d %d %d", n_u, N, m) != 3) {
+        perror("Error reading data");
+        fclose(file);
+        return 1;
+    }
+	
+	#ifdef ENABLE_FLATTEN_MATRICES
+        *M_G = (float*)calloc((*N) * (*m), sizeof(float));
+		for(int cnt = 0; cnt < N*m; cnt++) fscanf(file, "%f", &M_G[cnt]);
+    #else
+        *M_G = (float*)calloc((*N) * (*n_u) * (*m), sizeof(float));
+		for(int cnt = 0; cnt < N*n_u*m; cnt++) fscanf(file, "%f", &M_G[cnt]);
+    #endif
+	
+}
+
 int main(int argc, char *argv[]){
+	
+	// List of pointer declarations
+	float *w_v; 
+	float *g_P;
+	float *zhat_v; 
+	float *prod_Mw; 
+	float *p_D; 
+	float *y_vp1;
+	float *prod_Gz;
+	float *G_L;
+	
+	// Pointers for expected results 
+	float *exp_prod_Mw; 
+	float *exp_zhat;
+	float *exp_prod_Gz; 
+	float *exp_sum 
+	float *exp_y_vp1;
 	
 	if (argc != 2) {
         fprintf(stderr, "Usage: %s <subfolder number>\n", argv[0]);
@@ -408,18 +122,18 @@ int main(int argc, char *argv[]){
 	
 	// Dynamically allocate variables we need 
 	#ifdef ENABLE_FLATTEN_MATRICES
-		float *M_G = (float*)calloc(N*m, sizeof(float));
+		M_G = (float*)calloc(N*m, sizeof(float));
 		for(cnt = 0; cnt < N*m; cnt++) fscanf(file, "%f", &M_G[cnt]);
 	#else
-		float *M_G = (float*)calloc(N*n_u*m, sizeof(float));
+		M_G = (float*)calloc(N*n_u*m, sizeof(float));
 		for(cnt = 0; cnt < N*n_u*m; cnt++) fscanf(file, "%f", &M_G[cnt]);
 	#endif  
-	float *w_v = (float*)calloc(m, sizeof(float)); 
-	float *g_P = (float*)calloc(N*n_u, sizeof(float));
-	float *zhat_v = (float*)calloc(N*n_u, sizeof(float)); 
-	float *prod_Mw = (float*)calloc(N*n_u, sizeof(float)); 
-	float *exp_prod_Mw = (float*)calloc(N*n_u, sizeof(float)); 
-	float *exp_zhat = (float*)calloc(N*n_u, sizeof(float));
+	w_v = (float*)calloc(m, sizeof(float)); 
+	g_P = (float*)calloc(N*n_u, sizeof(float));
+	zhat_v = (float*)calloc(N*n_u, sizeof(float)); 
+	prod_Mw = (float*)calloc(N*n_u, sizeof(float)); 
+	exp_prod_Mw = (float*)calloc(N*n_u, sizeof(float)); 
+	exp_zhat = (float*)calloc(N*n_u, sizeof(float));
 	
 	// Populate input matrices 
 	for(cnt = 0; cnt < m; cnt++) fscanf(file, "%f", &w_v[cnt]);
@@ -455,6 +169,10 @@ int main(int argc, char *argv[]){
 	// Close the file 
 	fclose(file); 
 	#endif
+	
+	#ifdef ENABLE_STEP3
+	
+	#endif 
 	
 	// Fetching data for step 4
 	#ifdef ENABLE_STEP4

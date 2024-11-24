@@ -153,6 +153,54 @@ main.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cu.s
 .PHONY : main.cu.s
 
+src/kernel_functions.o: src/kernel_functions.cu.o
+.PHONY : src/kernel_functions.o
+
+# target to build an object file
+src/kernel_functions.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/kernel_functions.cu.o
+.PHONY : src/kernel_functions.cu.o
+
+src/kernel_functions.i: src/kernel_functions.cu.i
+.PHONY : src/kernel_functions.i
+
+# target to preprocess a source file
+src/kernel_functions.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/kernel_functions.cu.i
+.PHONY : src/kernel_functions.cu.i
+
+src/kernel_functions.s: src/kernel_functions.cu.s
+.PHONY : src/kernel_functions.s
+
+# target to generate assembly for a file
+src/kernel_functions.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/kernel_functions.cu.s
+.PHONY : src/kernel_functions.cu.s
+
+src/seq_functions.o: src/seq_functions.cpp.o
+.PHONY : src/seq_functions.o
+
+# target to build an object file
+src/seq_functions.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/seq_functions.cpp.o
+.PHONY : src/seq_functions.cpp.o
+
+src/seq_functions.i: src/seq_functions.cpp.i
+.PHONY : src/seq_functions.i
+
+# target to preprocess a source file
+src/seq_functions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/seq_functions.cpp.i
+.PHONY : src/seq_functions.cpp.i
+
+src/seq_functions.s: src/seq_functions.cpp.s
+.PHONY : src/seq_functions.s
+
+# target to generate assembly for a file
+src/seq_functions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/seq_functions.cpp.s
+.PHONY : src/seq_functions.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -165,6 +213,12 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... src/kernel_functions.o"
+	@echo "... src/kernel_functions.i"
+	@echo "... src/kernel_functions.s"
+	@echo "... src/seq_functions.o"
+	@echo "... src/seq_functions.i"
+	@echo "... src/seq_functions.s"
 .PHONY : help
 
 
