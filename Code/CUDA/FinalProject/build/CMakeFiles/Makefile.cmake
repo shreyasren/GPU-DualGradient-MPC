@@ -8,13 +8,11 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/CMakeLists.txt"
-  "CMakeFiles/3.26.5/CMakeCCompiler.cmake"
+  "CMakeFiles/3.26.5/CMakeCUDACompiler.cmake"
   "CMakeFiles/3.26.5/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.26.5/CMakeSystem.cmake"
-  "CMakeFiles/main.dir/main_generated_main.cu.o.cmake.pre-gen"
-  "CMakeFiles/main.dir/main_generated_main.cu.o.depend"
   "/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/support/cmake/modules/FindEnableCxx11.cmake"
-  "/usr/share/cmake/Modules/CMakeCInformation.cmake"
+  "/usr/share/cmake/Modules/CMakeCUDAInformation.cmake"
   "/usr/share/cmake/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
   "/usr/share/cmake/Modules/CMakeCommonLanguageInclude.cmake"
@@ -23,17 +21,15 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake/Modules/CMakeLanguageInformation.cmake"
   "/usr/share/cmake/Modules/CMakeSystemSpecificInformation.cmake"
   "/usr/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake"
-  "/usr/share/cmake/Modules/CheckCSourceCompiles.cmake"
   "/usr/share/cmake/Modules/CheckCXXCompilerFlag.cmake"
   "/usr/share/cmake/Modules/CheckCXXSourceCompiles.cmake"
-  "/usr/share/cmake/Modules/CheckIncludeFile.cmake"
+  "/usr/share/cmake/Modules/CheckIncludeFileCXX.cmake"
   "/usr/share/cmake/Modules/CheckLibraryExists.cmake"
   "/usr/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
-  "/usr/share/cmake/Modules/Compiler/GNU-C.cmake"
   "/usr/share/cmake/Modules/Compiler/GNU-CXX.cmake"
   "/usr/share/cmake/Modules/Compiler/GNU.cmake"
+  "/usr/share/cmake/Modules/Compiler/NVIDIA-CUDA.cmake"
   "/usr/share/cmake/Modules/FindCUDA.cmake"
-  "/usr/share/cmake/Modules/FindCUDA/run_nvcc.cmake"
   "/usr/share/cmake/Modules/FindCUDA/select_compute_arch.cmake"
   "/usr/share/cmake/Modules/FindPackageHandleStandardArgs.cmake"
   "/usr/share/cmake/Modules/FindPackageMessage.cmake"
@@ -41,7 +37,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake/Modules/Internal/CheckCompilerFlag.cmake"
   "/usr/share/cmake/Modules/Internal/CheckFlagCommonConfig.cmake"
   "/usr/share/cmake/Modules/Internal/CheckSourceCompiles.cmake"
-  "/usr/share/cmake/Modules/Platform/Linux-GNU-C.cmake"
   "/usr/share/cmake/Modules/Platform/Linux-GNU-CXX.cmake"
   "/usr/share/cmake/Modules/Platform/Linux-GNU.cmake"
   "/usr/share/cmake/Modules/Platform/Linux.cmake"
@@ -56,8 +51,6 @@ set(CMAKE_MAKEFILE_OUTPUTS
 
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
-  "CMakeFiles/main.dir/main_generated_main.cu.o.cmake.pre-gen"
-  "CMakeFiles/main.dir/main_generated_main.cu.o.Release.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 

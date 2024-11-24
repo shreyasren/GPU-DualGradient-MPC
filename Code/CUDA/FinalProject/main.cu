@@ -4,13 +4,13 @@
 #include <sys/time.h>
 #define EPSILON 1e-6
 #define COMP_EPSILON 1e-8
-//#define FLATTEN_MATRICES
+//#define ENABLE_FLATTEN_MATRICES
+#define ENABLE_FLIPPED_MATRICES
 #define ENABLE_GPU
-//#define STEP2
-#define STEP4
-#define num_states 900
+//#define ENABLE_STEP2
+#define ENABLE_STEP4
 
-#ifdef FLATTEN_MATRICES
+#ifdef ENABLE_FLATTEN_MATRICES
 __global__ void StepTwoGPADParallelCols(const float* __restrict__ M_G, const float* __restrict__ g_P, float* w_v, float* zhat_v, int N, int n_u, int m){
 	
 	// insert parallel code here
@@ -27,7 +27,7 @@ __global__ void StepFourGPADFlatParRows(const float* __restrict__ G_L, float* y_
 	
 	// collaborate in loading the shared memory with m threads
 	int i = 0; 
-	while(tx + i < num_states){
+	while(tx + i < n_u*N){
 		zhat_vs[tx + i] = zhat_v[tx + i]; // coalesced memory accesses 
 		i += blockDim.x; 
 	}
@@ -144,7 +144,7 @@ void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, cons
 }
 #endif 
 
-#ifndef FLATTEN_MATRICES
+#ifndef ENABLE_FLATTEN_MATRICES
 	// Sequential implementation of Step 2 over unflattened matrices 
 	void StepTwoGPADSequential(const float* M_G, float* w_v, const float* g_P, float* zhat_v, const int N, const int n_u, const int m){
 		
@@ -171,13 +171,12 @@ void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, cons
 				sum += G_L[i*numcols_G_L + j]*zhat_v[j]; 
 			}
 			sum += w_v[i] + p_D[i]; 
-			if (sum < COMP_EPSILON) { y_vp1[i] = 0.0f; }
-			else { y_vp1[i] = sum; } 
+			y_vp1[i] = (sum + abs(sum))/2; 
 		}
 	}
 	
 	
-	__global__ void StepFourGPADParRows(const float* G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
+	__global__ void StepFourGPADParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m, int max_threads){
 		
 		// launch m threads to compute a unique element of the output vector 
 		
@@ -192,20 +191,64 @@ void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, cons
 			zhat_vs[i] = zhat_v[i]; // coalesced memory accesses
 		}
 		__syncthreads(); 
-		
-		// handle out of bounds 
+			
+		if (index < max_threads){	
+			// handle out of bounds 
+			for (int i = index; i < m; i += gridDim.x*blockDim.x){
+				float sum = 0.0f; 
+				for (int j = 0; j < numcols_G_L; j++)
+				{
+					sum += G_L[i*numcols_G_L + j]*zhat_vs[j]; 
+				}
+				sum += w_v[i] + p_D[i]; // sum 
+				y_vp1[i] = (sum + abs(sum))/2; // max without control divergence
+			}
+		}
+		/*
 		if(index < m){
+			
 			float sum = 0.0f; 
 			for (int j = 0; j < numcols_G_L; j++){
 				sum += G_L[index*numcols_G_L + j]*zhat_vs[j]; 
 			}
 			sum += w_v[index] + p_D[index]; // sum 
-			y_vp1[index] = (sum < COMP_EPSILON) ? 0 : sum; // projection onto nonnegative orthant
+			//y_vp1[index] = (sum < COMP_EPSILON) ? 0 : sum; // projection onto nonnegative orthant
+			y_vp1[index] = (sum + abs(sum))/2; // projection onto nonnegative orthant without control divergence
 		}
+		*/
 
 	}
 	
-	__global__ void ParDotProduct(float* matrix, float* vector, float* result, int row_index, int size){
+	__global__ void StepFourGPADFlippedParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* p_D, float* zhat_v, const int N, const int n_u, const int m, int max_threads){
+		
+		// launch m threads to compute a unique element of the output vector 
+		
+		extern __shared__ float zhat_vs[];  
+		int index = threadIdx.x + blockIdx.x*blockDim.x; 
+		int numcols_G_L = n_u*N;
+		
+		// collaborate in loading the shared memory with m threads
+		for(int i = threadIdx.x; i < numcols_G_L; i+= blockDim.x){
+			zhat_vs[i] = zhat_v[i]; // coalesced memory accesses
+		}
+		__syncthreads(); 
+			
+		if (index < max_threads){	
+			// handle out of bounds 
+			for (int i = index; i < m; i += gridDim.x*blockDim.x){
+				float sum = 0.0f; 
+				for (int j = 0; j < numcols_G_L; j++)
+				{
+					sum += G_L[j*m + i]*zhat_vs[j]; // flipping the matrices results in coalesced memory accesses
+				}
+				sum += w_v[i] + p_D[i]; // sum 
+				//y_vp1[i] = (sum + abs(sum))/2; // max without control divergence
+				y_vp1[i] = (sum < COMP_EPSILON) ? 0 : sum;
+			}
+		}
+	}
+	
+	__global__ void ParDotProduct(const float* matrix, float* vector, float* result, int row_index, int size){
 		
 		extern __shared__ float prod[]; 
 		int index = threadIdx.x + blockIdx.x*blockDim.x; 
@@ -223,7 +266,7 @@ void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, cons
 		__syncthreads(); 
 		
 		// reduction step 
-		for (unsigned int stride = blockDim.x >> 1; stride >= 1; stride >>= 1){
+		for (unsigned int stride = blockDim.x >> 1; stride > 0; stride >>= 1){
 			if (tx < stride) prod[tx] += prod[tx + stride]; 
 			__syncthreads(); 
 		}
@@ -234,23 +277,24 @@ void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, cons
 		}
 	}
 	
-	__global__ void StepFourGPADDynamicParRows(const float* G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
+	__global__ void StepFourGPADDynamicParRows(const float* __restrict__ G_L, float* y_vp1, float* w_v, const float* __restrict__ p_D, float* zhat_v, const int N, const int n_u, const int m){
 		
 		int tx = threadIdx.x; 
 		int bx = blockIdx.x; 
 		int index = tx + bx*blockDim.x; 
 		int numcols_G_L = n_u*N; 
-		const int block_size = (int)(min(1024.0, (float)n_u*N)); 
+		const int block_size = (int)(min(256.0, (float)n_u*N)); 
 		float sum = 0.0f; 
 		
 		// handle out of bounds 
-		if(index < m){
-			ParDotProduct<<<1, block_size, block_size*sizeof(float)>>>(G_L, zhat_v, y_vp1, index*numcols_G_L, numcols_G_L); 
+		for (int i = index; i < m; i += gridDim.x*blockDim.x){
+			ParDotProduct<<<1, block_size, block_size*sizeof(float)>>>(G_L, zhat_v, y_vp1, i*numcols_G_L, numcols_G_L); 
 		}
 		cudaDeviceSynchronize(); // wait for all child kernels to complete execution 
 		
 		sum = y_vp1[index] + w_v[index] + p_D[index]; 
 		y_vp1[index] = (sum < COMP_EPSILON) ? 0 : sum; // projection onto nonnegative orthant
+		//y_vp1[index] = (sum + abs(sum))/2; 
 	}
 	
 	/*
@@ -322,7 +366,8 @@ int main(int argc, char *argv[]){
     }
 	
 	int n_u, N, m; 
-	int num_trials = 100; 
+	int num_trials = 10; 
+	int max_num_threads = 5000; 
 	int cnt = 0; 
 	FILE *file; 
     char *subfolder_number = argv[1];
@@ -338,10 +383,10 @@ int main(int argc, char *argv[]){
 	
 	
 	// Fetching data for step 2
-	#ifdef STEP2	
+	#ifdef ENABLE_STEP2	
 	char inpfile2[256];
 	char outpfile2[256];
-	#ifdef FLATTEN_MATRICES
+	#ifdef ENABLE_FLATTEN_MATRICES
 		snprintf(inpfile2, sizeof(inpfile2), "step2/%s/input.txt", subfolder_number);
 		snprintf(outpfile2, sizeof(outpfile2), "step2/%s/output.txt", subfolder_number);
 	#else
@@ -362,7 +407,7 @@ int main(int argc, char *argv[]){
     }
 	
 	// Dynamically allocate variables we need 
-	#ifdef FLATTEN_MATRICES
+	#ifdef ENABLE_FLATTEN_MATRICES
 		float *M_G = (float*)calloc(N*m, sizeof(float));
 		for(cnt = 0; cnt < N*m; cnt++) fscanf(file, "%f", &M_G[cnt]);
 	#else
@@ -412,12 +457,15 @@ int main(int argc, char *argv[]){
 	#endif
 	
 	// Fetching data for step 4
-	#ifdef STEP4
+	#ifdef ENABLE_STEP4
 	char inpfile4[256];
 	char outpfile4[256];
-	#ifdef FLATTEN_MATRICES
+	#ifdef ENABLE_FLATTEN_MATRICES
 		snprintf(inpfile4, sizeof(inpfile4), "step4/%s/input.txt", subfolder_number);
 		snprintf(outpfile4, sizeof(outpfile4), "step4/%s/output.txt", subfolder_number);
+	#elifdef ENABLE_FLIPPED_MATRICES
+		snprintf(inpfile4, sizeof(inpfile4), "step4/%s_flipped/input.txt", subfolder_number);
+		snprintf(outpfile4, sizeof(outpfile4), "step4/%s_flipped/output.txt", subfolder_number);
 	#else
 		snprintf(inpfile4, sizeof(inpfile4), "step4/%s_unflat/input.txt", subfolder_number);
 		snprintf(outpfile4, sizeof(outpfile4), "step4/%s_unflat/output.txt", subfolder_number);
@@ -447,7 +495,7 @@ int main(int argc, char *argv[]){
 	for(cnt = 0; cnt < m; cnt++) fscanf(file, "%f", &w_v[cnt]);
 	for(cnt = 0; cnt < N*n_u; cnt++) fscanf(file, "%f", &zhat_v[cnt]);
 	for(cnt = 0; cnt < m; cnt++) fscanf(file, "%f", &p_D[cnt]); 
-    #ifdef FLATTEN_MATRICES
+    #ifdef ENABLE_FLATTEN_MATRICES
 		float *G_L = (float*)calloc(N*m, sizeof(float));
 		for(cnt = 0; cnt < N*m; cnt++) fscanf(file, "%f", &G_L[cnt]);
 	#else
@@ -499,9 +547,9 @@ int main(int argc, char *argv[]){
 	// STEP 1: (INSERT HERE)
 	
 	// STEP 2: zhat_v <-- M_G * w_v - g_P
-	#ifdef STEP2
+	#ifdef ENABLE_STEP2
 	
-	#ifdef FLATTEN_MATRICES
+	#ifdef ENABLE_FLATTEN_MATRICES
 		StepTwoGPADFlatSequential(M_G, w_v, g_P, zhat_v, N, n_u, m);
 	#else 
 		StepTwoGPADSequential(M_G, w_v, g_P, zhat_v, N, n_u, m); 
@@ -530,7 +578,7 @@ int main(int argc, char *argv[]){
 	// STEP 3: (INSERT HERE)
 	
 	// STEP 4: y_{v+1} <-- [w_v + G_L * zhat_v + p_D]_+ (INSERT HERE)
-	#ifdef STEP4 
+	#ifdef ENABLE_STEP4 
 	
 	// GPU memory allocation and transfer
 	#ifdef ENABLE_GPU
@@ -539,7 +587,7 @@ int main(int argc, char *argv[]){
 	float* dw_v; 
 	float* dp_D; 
 	float* dzhat_v; 
-	#ifdef FLATTEN_MATRICES
+	#ifdef ENABLE_FLATTEN_MATRICES
 		cudaMalloc((void**)&dG_L, N*m*sizeof(float)); 
 		cudaMemcpy(dG_L, G_L, N*m*sizeof(float), cudaMemcpyHostToDevice);
 	#else 
@@ -555,35 +603,41 @@ int main(int argc, char *argv[]){
 	cudaMemcpy(dzhat_v, zhat_v, N*n_u*sizeof(float), cudaMemcpyHostToDevice); 
 	struct timeval gpu_start, gpu_finish; 
 	// Grid and block sizes 
-	dim3 bd((int)min(1024.0, (float)m), 1, 1); 
-	dim3 gd((int)ceil((float)m/1024.0), 1, 1); 
-	printf("Block Dimensions: (%d, %d, %d)\n", bd.x, bd.y, bd.z); 
-	printf("Grid Dimensions: (%d, %d, %d)\n", gd.x, gd.y, gd.z);
+	//dim3 bd((int)min(256.0, (float)m), 1, 1); 
+	//dim3 gd((int)ceil((float)m/256.0), 1, 1); 
+	//printf("Block Dimensions: (%d, %d, %d)\n", bd.x, bd.y, bd.z); 
+	//printf("Grid Dimensions: (%d, %d, %d)\n", gd.x, gd.y, gd.z);
+	
+	file = fopen("block_times.txt", "w"); 
+	for(cnt = 1; cnt <= max_num_threads; cnt += 2){
+	
+	dim3 bd((int)min(256.0, (float)cnt), 1, 1); 
+	dim3 gd((int)ceil((float)cnt/256.0), 1, 1);
+	printf("Number of threads: %d\n", cnt); 
 	
 	// Kernel launch and synchronize
-	unsigned long gpu_exectime = 0; 
+	long gpu_exectime = 0; 
 	unsigned int ovfl_cnt = 0; 
 	for (int i = 0; i < num_trials; i++){
 		gettimeofday(&gpu_start, NULL);
-		#ifdef FLATTEN_MATRICES
+		#ifdef ENABLE_FLATTEN_MATRICES
 			StepFourGPADFlatParRows<<<gd, bd, n_u*N*sizeof(float)>>>(dG_L, dy_vp1, dw_v, dp_D, dzhat_v, N, n_u, m);
+		#elifdef ENABLE_FLIPPED_MATRICES
+			StepFourGPADFlippedParRows<<<gd, bd, n_u*N*sizeof(float)>>>(dG_L, dy_vp1, dw_v, dp_D, dzhat_v, N, n_u, m, cnt);
 		#else
-			//StepFourGPADParRows<<<gd, bd, n_u*N*sizeof(float)>>>(dG_L, dy_vp1, dw_v, dp_D, dzhat_v, N, n_u, m);
+			StepFourGPADParRows<<<gd, bd, n_u*N*sizeof(float)>>>(dG_L, dy_vp1, dw_v, dp_D, dzhat_v, N, n_u, m, cnt);
 			//StepFourGPADDynamicParRows<<<gd, bd, n_u*N*sizeof(float)>>>(dG_L, dy_vp1, dw_v, dp_D, dzhat_v, N, n_u, m);
 		#endif 			
 		cudaDeviceSynchronize();
 		gettimeofday(&gpu_finish, NULL);
-		if (gpu_finish.tv_usec - gpu_start.tv_usec > 1e8){
-			ovfl_cnt++; 
-		}
-		else{
-			gpu_exectime += gpu_finish.tv_usec - gpu_start.tv_usec;
-		}
+		gpu_exectime += abs((long)gpu_finish.tv_usec - (long)gpu_start.tv_usec);
 		
 	}
 	cudaMemcpy(y_vp1, dy_vp1, m*sizeof(float), cudaMemcpyDeviceToHost);
-	printf("Avg. GPU Execution Time over %d trial(s) = %lu usec\n", num_trials - ovfl_cnt, gpu_exectime/(num_trials - ovfl_cnt)); 
+	fprintf(file, "%lu\n", gpu_exectime/(num_trials)); 
+	//printf("Avg. GPU Execution Time over %d trial(s) = %lu usec\n", num_trials - ovfl_cnt, gpu_exectime/(num_trials - ovfl_cnt)); 
 	#endif 
+	
 	
 	int status_success = 0; 
 	int fail_index = 0; 
@@ -607,7 +661,7 @@ int main(int argc, char *argv[]){
 	struct timeval cpu_start, cpu_finish; 
 	gettimeofday(&cpu_start, NULL);
 	for (int i = 0; i < num_trials; i++){
-		#ifdef FLATTEN_MATRICES
+		#ifdef ENABLE_FLATTEN_MATRICES
 			StepFourGPADFlatSequential(G_L, y_vp1, w_v, p_D, zhat_v, N, n_u, m);
 		#else 
 			StepFourGPADSequential(G_L, y_vp1, w_v, p_D, zhat_v, N, n_u, m);
@@ -615,18 +669,16 @@ int main(int argc, char *argv[]){
 	}
 	gettimeofday(&cpu_finish, NULL); 
 	
+	printf("Avg. GPU Execution Time over %d trial(s) = %lu usec\n", num_trials - ovfl_cnt, gpu_exectime/(num_trials - ovfl_cnt));
 	printf("Avg. CPU Execution Time over %d trial(s) = %lu usec\n", num_trials, (cpu_finish.tv_usec - cpu_start.tv_usec)/num_trials); 
-	
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, 0);
-	printf("Compute Capability: %d.%d\n", prop.major, prop.minor);
 
 	#endif 
 	// end algorithm 
-	
+	}
+	fclose(file); 
 	
 	// Free memory from the heap
-	#ifdef STEP2
+	#ifdef ENABLE_STEP2
 	free(M_G); 
 	free(w_v); 
 	free(g_P);
@@ -636,7 +688,7 @@ int main(int argc, char *argv[]){
 	free(exp_zhat);
 	#endif 
 	
-	#ifdef STEP4
+	#ifdef ENABLE_STEP4
 	free(w_v); 
 	free(zhat_v); 
 	free(p_D); 

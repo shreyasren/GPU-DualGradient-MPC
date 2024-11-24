@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build",
+  "command": "/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/compilers/bin/nvcc   -I/SECS/home/l/lukenuculaj/ECE5770/Assignments/libwb -O3 -DNDEBUG -std=c++11 --generate-code=arch=compute_37,code=[compute_37,sm_37] -std=c++11 -x cu -rdc=true -c /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu -o CMakeFiles/main.dir/main.cu.o",
+  "file": "/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu",
+  "output": "CMakeFiles/main.dir/main.cu.o"
+}
+]

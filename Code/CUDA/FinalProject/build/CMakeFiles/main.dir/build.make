@@ -69,179 +69,50 @@ include CMakeFiles/main.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/main.dir/flags.make
 
-CMakeFiles/main.dir/main_generated_main.cu.o: /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu
-CMakeFiles/main.dir/main_generated_main.cu.o: /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/alloca.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/assert.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/byteswap.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/endian.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/floatn-common.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/floatn.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/flt-eval-method.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/fp-fast.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/fp-logb.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/iscanonical.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/libc-header-start.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/libm-simd-decl-stubs.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/local_lim.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/long-double.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/math-vector.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/mathcalls-helper-functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/mathcalls-narrow.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/mathcalls.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/mathinline.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/posix1_lim.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/posix2_lim.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/pthreadtypes-arch.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/pthreadtypes.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/select.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/stdint-intn.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/stdio.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/stdio_lim.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/stdlib-bsearch.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/stdlib-float.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/sys_errlist.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/thread-shared-types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/time.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/timex.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/FILE.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/__FILE.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/__fpos64_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/__fpos_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/__locale_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/__mbstate_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/__sigset_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/clock_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/clockid_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/cookie_io_functions_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/locale_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/sigset_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/struct_FILE.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/struct_itimerspec.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/struct_timespec.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/struct_timeval.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/struct_tm.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/time_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/types/timer_t.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/typesizes.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/uintn-identity.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/uio_lim.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/waitflags.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/waitstatus.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/wordsize.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/bits/xopen_lim.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/concept_check.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/cpp_type_traits.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/cxxabi_init_exception.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/exception.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/exception_defines.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/exception_ptr.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/hash_bytes.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/move.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/nested_exception.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/bits/std_abs.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/cmath
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/cstdlib
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/exception
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/ext/type_traits.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/math.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/new
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/stdlib.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/type_traits
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/typeinfo
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/x86_64-redhat-linux/bits/c++config.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/x86_64-redhat-linux/bits/cpu_defines.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/c++/8/x86_64-redhat-linux/bits/os_defines.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/endian.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/features.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/gnu/stubs-64.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/gnu/stubs.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/limits.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/linux/limits.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/math.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/stdc-predef.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/stdio.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/stdlib.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/string.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/strings.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/sys/cdefs.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/sys/select.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/sys/time.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/sys/types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/include/time.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/lib/gcc/x86_64-redhat-linux/8/include/limits.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/lib/gcc/x86_64-redhat-linux/8/include/stdarg.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/lib/gcc/x86_64-redhat-linux/8/include/stddef.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/lib/gcc/x86_64-redhat-linux/8/include/syslimits.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/builtin_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/channel_descriptor.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/common_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/device_double_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/device_double_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/device_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/device_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/host_config.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/host_defines.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/math_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/math_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/sm_70_rt.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/crt/sm_70_rt.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/cuda_device_runtime_api.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/cuda_runtime.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/cuda_runtime_api.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/cuda_surface_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/cuda_texture_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/device_atomic_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/device_atomic_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/device_launch_parameters.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/device_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/driver_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/driver_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/library_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_20_atomic_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_20_atomic_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_20_intrinsics.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_20_intrinsics.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_30_intrinsics.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_30_intrinsics.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_32_atomic_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_32_atomic_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_32_intrinsics.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_32_intrinsics.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_35_atomic_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_35_intrinsics.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_60_atomic_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_60_atomic_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_61_intrinsics.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/sm_61_intrinsics.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/surface_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/surface_indirect_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/surface_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/texture_fetch_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/texture_indirect_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/texture_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/vector_functions.h
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/vector_functions.hpp
-CMakeFiles/main.dir/main_generated_main.cu.o: /usr/local/cuda-10.1/include/vector_types.h
-CMakeFiles/main.dir/main_generated_main.cu.o: CMakeFiles/main.dir/main_generated_main.cu.o.Release.cmake
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building NVCC (Device) object CMakeFiles/main.dir/main_generated_main.cu.o"
-	cd /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir && /usr/bin/cmake -E make_directory /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir//.
-	cd /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir && /usr/bin/cmake -D verbose:BOOL=$(VERBOSE) -D build_configuration:STRING=Release -D generated_file:STRING=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir//./main_generated_main.cu.o -D generated_cubin_file:STRING=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir//./main_generated_main.cu.o.cubin.txt -P /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir//main_generated_main.cu.o.Release.cmake
+CMakeFiles/main.dir/main.cu.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/main.cu.o: /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu
+CMakeFiles/main.dir/main.cu.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CUDA object CMakeFiles/main.dir/main.cu.o"
+	/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/compilers/bin/nvcc  $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -x cu -rdc=true -c /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu -o CMakeFiles/main.dir/main.cu.o
+	/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/compilers/bin/nvcc  $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -x cu -M /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/main.cu -MT CMakeFiles/main.dir/main.cu.o -o CMakeFiles/main.dir/main.cu.o.d
+
+CMakeFiles/main.dir/main.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CUDA source to CMakeFiles/main.dir/main.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/main.dir/main.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CUDA source to assembly CMakeFiles/main.dir/main.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
 # Object files for target main
-main_OBJECTS =
+main_OBJECTS = \
+"CMakeFiles/main.dir/main.cu.o"
 
 # External object files for target main
-main_EXTERNAL_OBJECTS = \
-"/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir/main_generated_main.cu.o"
+main_EXTERNAL_OBJECTS =
 
-main: CMakeFiles/main.dir/main_generated_main.cu.o
+CMakeFiles/main.dir/cmake_device_link.o: CMakeFiles/main.dir/main.cu.o
+CMakeFiles/main.dir/cmake_device_link.o: CMakeFiles/main.dir/build.make
+CMakeFiles/main.dir/cmake_device_link.o: CMakeFiles/main.dir/dlink.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CUDA device code CMakeFiles/main.dir/cmake_device_link.o"
+	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/dlink.txt --verbose=$(VERBOSE)
+
+# Rule to build all files generated by this target.
+CMakeFiles/main.dir/build: CMakeFiles/main.dir/cmake_device_link.o
+.PHONY : CMakeFiles/main.dir/build
+
+# Object files for target main
+main_OBJECTS = \
+"CMakeFiles/main.dir/main.cu.o"
+
+# External object files for target main
+main_EXTERNAL_OBJECTS =
+
+main: CMakeFiles/main.dir/main.cu.o
 main: CMakeFiles/main.dir/build.make
-main: /usr/local/cuda-10.1/lib64/libcudart_static.a
-main: /usr/lib64/librt.so
+main: CMakeFiles/main.dir/cmake_device_link.o
 main: CMakeFiles/main.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CUDA executable main"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -252,7 +123,7 @@ CMakeFiles/main.dir/clean:
 	$(CMAKE_COMMAND) -P CMakeFiles/main.dir/cmake_clean.cmake
 .PHONY : CMakeFiles/main.dir/clean
 
-CMakeFiles/main.dir/depend: CMakeFiles/main.dir/main_generated_main.cu.o
+CMakeFiles/main.dir/depend:
 	cd /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build /SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/main.dir/depend
 
