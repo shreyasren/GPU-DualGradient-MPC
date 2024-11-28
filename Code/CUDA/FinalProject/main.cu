@@ -31,6 +31,14 @@ void printMatrix(const float* mat, int rows, int cols, const char* name) {
     }
 }
 
+void print_vectors_side_by_side(const float* vector1, const float* vector2, int length) {
+    printf("Vector1\t\tVector2\n");
+    printf("-------\t\t-------\n");
+    for (int i = 0; i < length; ++i) {
+        printf("%.8f\t\t%.8f\n", vector1[i], vector2[i]);
+    }
+}
+
 void readData(const char *filename, int *n_u, int *N, int *m, int *num_iterations, float *L, float **M_G, float **g_P, float **G_L, float **p_D, float **theta, float **beta){
 	
 	// open files and read 
@@ -111,16 +119,12 @@ int main(){
 	readData(filename, &n_u, &N, &m, &num_iterations, &L, &M_G, &g_P, &G_L, &p_D, &theta, &beta); 
 	initializeVariables(&y_v, &y_vp1, &w_v, &zhat_v, &z_v, n_u, N, m); 
 	
-	/*
-	printMatrix(M_G, n_u*N, m, "M_G"); 
-	printMatrix(G_L, m, n_u*N, "G_L"); 
-	printMatrix(g_P, n_u*N, 1, "g_P"); 
-	printMatrix(p_D, m, 1, "p_D"); 
-	printMatrix(theta, num_iterations, 1, "theta"); 
-	printMatrix(beta, num_iterations, 1, "beta");
-	printMatrix(y_vp1, m, 1, "y_vp1"); 
-	*/
-	
+	//printMatrix(M_G, n_u*N, m, "M_G"); 
+	//printMatrix(G_L, m, n_u*N, "G_L"); 
+	//printMatrix(g_P, n_u*N, 1, "g_P"); 
+	//printMatrix(p_D, m, 1, "p_D"); 
+	//printMatrix(theta, num_iterations, 1, "theta"); 
+	//printMatrix(beta, num_iterations, 1, "beta");	
 	
 	// Write algorithm here!
 	int v = 0; 
@@ -162,7 +166,7 @@ int main(){
 	
 	dim3 gridDimStep1(ceil((float)m / (float)256.0f), 1 , 1);
     dim3 blockDimStep1(256, 1, 1);
-	dim3 gridDimStep2(ceil((float)(n_u * N * 0.25) / (float)256.0f), 1 , 1);
+	dim3 gridDimStep2(ceil((float)(n_u * N) / (float)256.0f), 1 , 1);
 	dim3 blockDimStep2(256, 1, 1);
 	dim3 gridDimStep3(ceil((float)n_u*N / 256.0f), 1, 1); 
 	dim3 blockDimStep3(256, 1, 1);  
@@ -171,7 +175,7 @@ int main(){
 	dim3 gridDimCopy((int)ceil((float)m/256.0), 1, 1);
 	dim3 blockDimCopy(256, 1, 1); 
 	
-	for (int i = 0; i < 100; i++){
+	for (v = 0; v < 100; v++){
 		gettimeofday(&gpu_start, NULL);
 		// STEP 1
 		StepOneGPADKernel<<<gridDimStep1, blockDimStep1>>>(dy_vp1, dy_v, dw_v, beta[v], m); 
@@ -188,11 +192,12 @@ int main(){
 		gpu_exectime += abs((long)gpu_finish.tv_usec - (long)gpu_start.tv_usec);
 	}
 	cudaMemcpy(y_vp1, dy_vp1, m * sizeof(float), cudaMemcpyDeviceToHost); 
-	cudaMemcpy(z_v, dz_v, n_u * N * sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(zhat_v, dzhat_v, N*n_u*sizeof(float), cudaMemcpyDeviceToHost); 
 	cudaMemcpy(w_v, dw_v, m * sizeof(float), cudaMemcpyDeviceToHost);
 	//printMatrix(w_v, m, 1, "w_v"); 
-	//printMatrix(z_v, n_u*N, 1, "z_v"); 
-	//printMatrix(y_vp1, m, 1, "p_D");
+	printMatrix(zhat_v, n_u*N, 1, "z_v"); 
+	//printMatrix(y_vp1, m, 1, "Computed y_vp1");
+	print_vectors_side_by_side(p_D, y_vp1, m); 
 	cudaFree(dy_vp1); 
 	cudaFree(dy_v); 
 	cudaFree(dw_v); 
@@ -200,6 +205,8 @@ int main(){
 	cudaFree(dzhat_v);
 	cudaFree(dp_D);
 	
+	printf("n_u = %d, N = %d, m = %d\n", n_u, N, m); 
+	printf("Total GPU Execution Time over %d trial(s) = %lu usec\n", 100, gpu_exectime); 
 	printf("Avg. GPU Execution Time over %d trial(s) = %lu usec\n", 100, gpu_exectime/100);
 	
 	// Free memory from the heap

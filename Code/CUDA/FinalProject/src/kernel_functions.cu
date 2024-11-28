@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <cuda_fp16.h>
+#include <cuda_runtime.h>
 #include "kernel_functions.h"
 #define COMP_EPSILON 1e-8
 
@@ -185,18 +187,16 @@ __global__ void StepFourGPADFlippedParRows(const float* __restrict__ G_L, float*
 	}
 	__syncthreads(); 
 		
-	if (index < max_threads){	
-		// handle out of bounds 
-		for (int i = index; i < m; i += gridDim.x*blockDim.x){
-			float sum = 0.0f; 
-			for (int j = 0; j < numcols_G_L; j++)
-			{
-				sum += G_L[j*m + i]*zhat_vs[j]; // flipping the matrices results in coalesced memory accesses
-			}
-			sum += w_v[i] + p_D[i]; // sum 
-			//y_vp1[i] = (sum + abs(sum))/2; // max without control divergence
-			y_vp1[i] = (sum < COMP_EPSILON) ? 0 : sum;
+	// handle out of bounds 
+	for (int i = index; i < m; i += gridDim.x*blockDim.x){
+		float sum = 0.0f; 
+		for (int j = 0; j < numcols_G_L; j++)
+		{
+			sum += G_L[j*m + i]*zhat_vs[j]; // flipping the matrices results in coalesced memory accesses
 		}
+		sum += w_v[i] + p_D[i]; // sum 
+		y_vp1[i] = (sum + abs(sum))/2; // max without control divergence
+		//y_vp1[i] = (sum < COMP_EPSILON) ? 0 : sum;
 	}
 }
 
