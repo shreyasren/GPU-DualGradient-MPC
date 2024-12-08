@@ -1,1 +1,0 @@
-/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/compilers/bin/nvcc  -O3 -DNDEBUG --generate-code=arch=compute_37,code=[compute_37,sm_37] -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/main.dir/main.cu.o -o CMakeFiles/main.dir/cmake_device_link.o   -L/SECS/home/l/lukenuculaj/ECE5770/Assignments/libwb/lib  -lwb -lrt -lcudadevrt -lcudart_static -lpthread -ldl 

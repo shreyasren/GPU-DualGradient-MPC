@@ -1,3 +1,0 @@
-/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/main.dir
-/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/edit_cache.dir
-/SECS/home/l/lukenuculaj/ECE5770/Assignments/FinalProject/build/CMakeFiles/rebuild_cache.dir

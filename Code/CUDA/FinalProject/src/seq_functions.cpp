@@ -42,6 +42,14 @@ void StepFourGPADFlatSequential(const float* G_L, float* y_vp1, float* w_v, cons
 	}
 }
 
+void StepOneGPADSequential(float *y_vec_in, float *y_vec_minus_1_in, float *w_vec_out, float beta_v, int m){
+
+  for (int i = 0; i < m; i++)
+      {
+          w_vec_out[i] = y_vec_in[i] + beta_v * (y_vec_in[i] - y_vec_minus_1_in[i]);
+      }
+}
+    
 // Sequential implementation of Step 2 over unflattened matrices 
 void StepTwoGPADSequential(const float* M_G, float* w_v, const float* g_P, float* zhat_v, const int N, const int n_u, const int m){
 	
@@ -55,6 +63,12 @@ void StepTwoGPADSequential(const float* M_G, float* w_v, const float* g_P, float
 		zhat_v[i] = sum - g_P[i]; 
 	}
 
+}
+
+void StepThreeGPADSequential(float theta, int length, float* z_vm1, float* zhat_v, float* z_v) {
+    for (int i = 0; i < length; i++) {
+        z_v[i] = (1 - theta) * z_vm1[i] + theta * zhat_v[i];
+    }
 }
 
 // Sequential implementation of Step 4 over unflattened matrices 
