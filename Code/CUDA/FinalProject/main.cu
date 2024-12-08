@@ -5,11 +5,6 @@
 #include "seq_functions.h"
 #include "kernel_functions.h"
 
-#define EPSILON 1e-6
-#define COMP_EPSILON 1e-8
-//#define ENABLE_FLATTEN_MATRICES
-#define ENABLE_FLIPPED_MATRICES
-
 // Function to print a vector
 void printVector(const float* vec, int size, const char* name) {
     printf("%s: [", name);
@@ -28,14 +23,6 @@ void printMatrix(const float* mat, int rows, int cols, const char* name) {
             printf("%f ", mat[i * cols + j]);
         }
         printf("\n");
-    }
-}
-
-void print_vectors_side_by_side(const float* vector1, const float* vector2, int length) {
-    printf("Vector1\t\tVector2\n");
-    printf("-------\t\t-------\n");
-    for (int i = 0; i < length; ++i) {
-        printf("%.8f\t\t%.8f\n", vector1[i], vector2[i]);
     }
 }
 
@@ -97,6 +84,7 @@ int main(){
 	int m;
 	int num_iterations; 
 	float L; 
+	int N_v = 100; // fixed iteration count 
 	
 	// Constants computed off-line 
 	float *M_G; 
@@ -115,8 +103,7 @@ int main(){
 	
 	// Read in data from text file and initialize variables 
 	char filename[256];	
-	for(int num_dataset = 20; num_dataset <= 28; num_dataset++){
-	for(int rep = 0; rep < 4; rep++){
+	num_dataset = 10; // Select a dataset number from 1 - 28
 	snprintf(filename, sizeof(filename), "inputs_manysets/input_%d.txt", num_dataset);
 	readData(filename, &n_u, &N, &m, &num_iterations, &L, &M_G, &g_P, &G_L, &p_D, &theta, &beta); 
 	initializeVariables(&y_v, &y_vp1, &w_v, &zhat_v, &z_v, n_u, N, m); 
@@ -170,7 +157,7 @@ int main(){
 	dim3 gridDimCopy((int)ceil((float)m/256.0), 1, 1);
 	dim3 blockDimCopy(256, 1, 1); 
 	
-	for (v = 0; v < 1; v++){
+	for (v = 0; v < N_v; v++){
 		gettimeofday(&gpu_start, NULL);
 		// STEP 1
 		StepOneGPADKernel<<<gridDimStep1, blockDimStep1>>>(dy_vp1, dy_v, dw_v, beta[v], m); 
@@ -191,10 +178,6 @@ int main(){
 	cudaMemcpy(z_v, dz_v, N*n_u*sizeof(float), cudaMemcpyDeviceToHost);
 	cudaMemcpy(zhat_v, dzhat_v, N*n_u*sizeof(float), cudaMemcpyDeviceToHost); 
 	cudaMemcpy(w_v, dw_v, m * sizeof(float), cudaMemcpyDeviceToHost);
-	//printMatrix(w_v, m, 1, "w_v"); 
-	//printMatrix(zhat_v, n_u*N, 1, "z_v"); 
-	//printMatrix(y_vp1, m, 1, "Computed y_vp1");
-	//print_vectors_side_by_side(p_D, y_vp1, m); 
 	cudaFree(dy_vp1); 
 	cudaFree(dy_v); 
 	cudaFree(dw_v); 
@@ -202,13 +185,10 @@ int main(){
 	cudaFree(dzhat_v);
 	cudaFree(dp_D);
 	
-	if (rep == 0) printf("%d: n_u = %d, N = %d, m = %d\n", num_dataset, n_u, N, m); 
-	//printf("Total GPU Execution Time over %d trial(s) = %lu usec\n", 100, gpu_exectime); 
-	printf("Avg. GPU Execution Time over %d trial(s) = %lu usec\n", 1, gpu_exectime/1);
-	//printf("z* = "); 
-	//for(int ucnt = 0; ucnt < n_u; ucnt++) printf("%.5f ", z_v[ucnt]); 
-	//printf("\n"); 
-	
+	printf("%d: n_u = %d, N = %d, m = %d\n", num_dataset, n_u, N, m); 
+	printf("Total GPU Execution Time over %d trial(s) = %lu usec\n", N_v, gpu_exectime); 
+	printf("Avg. GPU Execution Time over %d trial(s) = %lu usec\n", N_v, gpu_exectime/N_v);
+
 	// Free memory from the heap
 	free(M_G);  
 	free(g_P);
