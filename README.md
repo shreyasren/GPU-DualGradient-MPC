@@ -13,7 +13,7 @@ Model Predictive Control (MPC) is widely used in embedded systems for real-time 
 ## 🛠️ Implementation Details
 - **Programming Languages:** CUDA C/C++
 - **Optimization Approach:** First-order dual gradient projection
-- **Target Hardware:** NVIDIA GPUs (tested on [specific hardware, if relevant])
+- **Target Hardware:** NVIDIA GPUs (tested on NVIDIA Tesla K80 accelerator)
 
 ## 📂 Repository Structure
 │── Code/                 
