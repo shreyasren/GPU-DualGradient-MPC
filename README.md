@@ -16,16 +16,15 @@ Model Predictive Control (MPC) is widely used in embedded systems for real-time 
 - **Target Hardware:** NVIDIA GPUs (tested on [specific hardware, if relevant])
 
 ## 📂 Repository Structure
-GPU-Accelerated-GPAD/
 │── Code/                 
-│──── FinalProject/      
-│──────── build/
-│──────── include/
-│──────── src/
-│──────── support/cmake/modules/
-│──────── CMakeLists.txt
-│──────── main.cu       
-│──────── main_prof.cu   
-│──── MATLAB/          
-│── Documents/         
-│── README.md             
+│──── FinalProject/ <br>
+│──────── build/ <br>
+│──────── include/ <br>
+│──────── src/ <br>
+│──────── support/cmake/modules/ <br>
+│──────── CMakeLists.txt <br>
+│──────── main.cu        <br>
+│──────── main_prof.cu   <br> 
+│──── MATLAB/      <br> 
+│── Documents/   <br>       
+│── README.md     <br>         
